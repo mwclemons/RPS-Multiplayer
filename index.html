@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rock Paper Scissors</title>
+    <!-- link jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- link bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- link css style sheet -->
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css">
+    
+    <!-- link firebase -->
+    <script src="https://www.gstatic.com/firebasejs/5.9.4/firebase.js"></script>
+    
+</head>
+
+
+
+<body>
+    <div class="container">
+        <br>
+        <br>
+        <div class="row">
+            <h1 class="col-12 text-center">
+                Multiplayer Rock Paper Scissors
+            </h1>
+        </div>
+    </div>
+    <div class="container text-center" >
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-1" id="player1"></div>
+            <div class="col-2" id="vs"></div>
+            <div class="col-1" id="player2"></div>
+        </div>
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-1" id="score1"></div>
+            <div class="col-2" ></div>
+            <div class="col-1" id="score2"></div>
+        </div>
+        <div class="row">
+            <div class="col-12" id="round"></div>
+        </div>    
+        
+        <div class="row">
+            <div class="col-12" id="narrator">
+                Enter a Username and press Ready!!
+            </div>
+        </div>
+
+
+        <div class="row" id="input-form">
+            <div class="col-4"></div>
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="topic-input">Username:</label>
+                    <input class="form-control" id="username-input" type="text">
+                </div>
+                <button class="btn btn-secondary" id="add-user" type="submit">Ready!!</button>
+            </div>
+               
+        </div>
+    </div>  
+    <br>
+    <br>
+    <div class="container" id="rps-buttons">
+        <div class="row text-center" >
+            <div class="col-3"></div>
+            <div class="col-2 rps-selection" id="rock-selection">
+                <img src="assets/images/rock.jpg" class="img-fluid rounded">
+            </div>
+            <div class="col-2 rps-selection" id="paper-selection">
+                <img src="assets/images/paper.jpg" class="img-fluid rounded">
+            </div>
+            <div class="col-2 rps-selection" id="scissors-selection">
+                <img src="assets/images/scissors.jpg" class="img-fluid rounded">
+            </div>
+            <div class="col-3"></div>
+        </div>
+    </div>
+    <div class="container" id="countdown-area">
+        <div class="row text-center">
+            <div class="col-12" id="countdown-narrative">Get Ready - Next round starts in</div>
+        </div>
+        <div class="row text-center">
+            <div class="col-12" id="countdown">3</div>
+        </div>
+    </div>  
+
+        
+    
+    <!-- link logic javascript -->
+    <script src="assets/javascript/logic.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+.img-fluid {
+    height: 125px;
+    width: 125px;
+    border: 3pt solid black;
+    padding: 5px;
+}
+
+
+.img-fluid:hover  {
+    border: 3pt solid rgb(200, 245, 37);
+    
+};
+
+
+.rps-buttons{
+    visibility: hidden;
+}
+
+#countdown-area {
+    font-size: 25px;
+    visibility: hidden;
+    height: 0;
+}
+#countdown {
+    color: red
+}

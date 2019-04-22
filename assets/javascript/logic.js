@@ -176,9 +176,19 @@ game.on("value", function(snap) {
             divButtons.css("visibility", "hidden");
             divPlayer1Score.text(myGame.player1Wins);
             divPlayer2Score.text(myGame.player2Wins);
-            
+
             setTimeout(function(){
-                divNarrator.text("Game Over!!!");
+                
+                if (myGame.player1Wins === winsLimit && myKey === myGame.player1) {
+                    divNarrator.text("Game Over!! Congratulations, " + myGame.player1Name + ", you won.");
+                } else if (myGame.player1Wins === winsLimit) {
+                    divNarrator.text("Game Over!! Sorry, " + myGame.player2Name + ", you lost.");
+                } else if (myGame.player2Wins === winsLimit && myKey === myGame.player2) {
+                    divNarrator.text("Game Over!! Congratulations, " + myGame.player2Name + ", you won.");
+                } else if (myGame.player2Wins === winsLimit) {
+                    divNarrator.text("Game Over!! Sorry, " + myGame.player1Name + ", you lost.");
+                }
+                
                 $("#rock-selection").css("visibility", "hidden");
                 $("#paper-selection").css("visibility", "hidden");
                 $("#scissors-selection").css("visibility", "hidden");
@@ -199,6 +209,7 @@ game.on("value", function(snap) {
                     $("#rock-selection").css("visibility", "visible");
                     $("#paper-selection").css("visibility", "visible");
                     $("#scissors-selection").css("visibility", "visible");
+                    $(".rps-selection").css("pointer-events", "auto");
                 } else {
                     $("#countdown").text(count);
                     count--
@@ -242,6 +253,7 @@ function updateGame() {
     divRound.text("Round " + myGame.round + " of " + roundLimit + ".");
     divNarrator.css("visibility", "visible")
     divNarrator.text("Please select Rock, Paper or Scissors!");
+    
     $("#countdown-area").css("visibility", "hidden");
     $("#countdown-area").css("height", "0");
     
@@ -278,8 +290,9 @@ connectionsRef.on("value", function(snap) {
 
 // click event for card selection
 $(".rps-selection").click(function(){
-    var mySelection = this.id
     
+    var mySelection = this.id
+    $(".rps-selection").css("pointer-events", "none");
     
     if (mySelection === "rock-selection") {
         $("#paper-selection").css("visibility", "hidden");
@@ -294,6 +307,7 @@ $(".rps-selection").click(function(){
         $("#rock-selection").css("visibility", "hidden");
         setTimeout(function(){ divNarrator.text("You've selected Scissors. Waiting on opponent to complete selection.") }, 10);
     };
+
 
     updateMySelection(myKey, mySelection);
 });

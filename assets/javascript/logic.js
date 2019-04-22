@@ -23,6 +23,7 @@ var myGame;
 var gameRound = 0;
 var myConnections
 var divButtons = $("#rps-buttons")
+var divAgainButton = $("#again-btn")
 var divInput = $("#input-form")
 var divNarrator = $("#narrator")
 var divVs = $("#vs")
@@ -36,7 +37,7 @@ var curPlayer2Selection = "";
 var roundLimit = 5;
 
 
-
+// updates connections table when there is a new connection and when a connection ends
 connectedRef.on("value", function(snap) {
     // If they are connected..
     if (snap.val()) {
@@ -50,12 +51,33 @@ connectedRef.on("value", function(snap) {
     };
 });
 
+// when the currentGame table in the database updates, this function runs.  Manages the entire game
 game.on("value", function(snap) {
     myGame = snap.val();
     curPlayer1Selection = myGame.player1CurrentSelection;
     curPlayer2Selection = myGame.player2CurrentSelection;
     gameRound = myGame.round;
 
+    // if both players select to play again currentGame in the database is reset and the board is reset & updated
+    if (myGame.player1PlayAgain === "Yes" && myGame.player2PlayAgain === "Yes" ) {
+        game.update({
+            player1CurrentSelection: "",
+            player1PlayAgain: "",
+            player1Wins: 0,
+            player2CurrentSelection: "",
+            player2PlayAgain: "",
+            player2Wins: 0,
+            round: 1,
+        });
+    
+        updateGame();
+        $("#rock-selection").css("visibility", "visible");
+        $("#paper-selection").css("visibility", "visible");
+        $("#scissors-selection").css("visibility", "visible");
+    };
+
+
+    // in currentGame, if both players are tied to connectioned users, the isOpen is set to false, otherwise isOpen is true
     if (myGame.player1 !== "" && myGame.player2 !== "") {
         game.update({
             isOpen: false,
@@ -66,15 +88,17 @@ game.on("value", function(snap) {
         });
     };
 
+    // if a third connection joins the application, they are told that the game is not available
     if (!myGame.isOpen && myGame.round === 1) {
         if (myKey===myGame.player1 || myKey===myGame.player2) {
             updateGame();
         } else {
-            divNarrator.text("Sorry!! Other players are already playing.  Please wait");
+            divNarrator.text("Sorry!! Other players are already playing.  Please try again later.");
             divInput.css("visibility", "hidden");
         };
     };
 
+    // if both players select the same card, update board to say it was a push and clear player selections 
     function playersTie() {
         setTimeout(function(){ divNarrator.text("It was a push. You both went with "+ curPlayer1Selection + "." ) }, 10);
         setTimeout(function(){
@@ -86,6 +110,10 @@ game.on("value", function(snap) {
         }, 1000);
     };
 
+    // if player 2 won the round increase player2Wins in database by 1 and update scoreboard, 
+    // display winning message for player2, display losing message for player1
+    // clear both player selections
+    // increase the round by 1
     function player2Won() {
         var myWins = myGame.player2Wins;
         myWins++;
@@ -105,10 +133,15 @@ game.on("value", function(snap) {
                 player2CurrentSelection: "",
                 round: gameRound,
             });
+            divPlayer2Score.text(myGame.player2Wins);
             nextRound();
         }, 1000);
     };
 
+    // if player 1 won the round increase player1Wins in database by 1 and update scoreboard, 
+    // display winning message for player1, display losing message for player2
+    // clear both player selections
+    // increase the round by 1
     function player1Won() {
         var myWins = myGame.player1Wins;
         myWins++;
@@ -128,19 +161,30 @@ game.on("value", function(snap) {
                 player2CurrentSelection: "",
                 round: gameRound,
             });
+            divPlayer1Score.text(myGame.player1Wins);
             nextRound();
         }, 100);
     };
 
+    // move the game to next round, and check that game isn't over based on the round number
     function nextRound() {
 
+        // if game over, display that game is over and ask players if they'd like to play again
         if (gameRound > roundLimit) {
             divRound.css("visibility", "hidden");
             divButtons.css("visibility", "hidden");
             divPlayer1Score.text(myGame.player1Wins);
             divPlayer2Score.text(myGame.player2Wins);
-            divNarrator.text("Game Over!!!");
-    
+            
+            setTimeout(function(){
+                divNarrator.text("Game Over!!!");
+                $("#rock-selection").css("visibility", "hidden");
+                $("#paper-selection").css("visibility", "hidden");
+                $("#scissors-selection").css("visibility", "hidden");
+                divAgainButton.css("visibility", "visible");
+            }, 2000);
+
+        // if the game is not over, count down to the next round starting & proceed to next round, update the board to show cards
         } else {
             var count = 3
             $("#countdown").text(count);
@@ -162,7 +206,7 @@ game.on("value", function(snap) {
         }
     }
 
-
+    // when both players have made a selection, determine which player won the round and call appropriate funciton
     if (curPlayer1Selection !== "" && curPlayer2Selection !== "") {
         if (curPlayer1Selection === curPlayer2Selection) {
             playersTie();
@@ -182,6 +226,7 @@ game.on("value", function(snap) {
     };
 });
 
+// updates the board, score, round, hides countdown
 function updateGame() {
     
     divButtons.css("visibility", "visible");
@@ -192,6 +237,7 @@ function updateGame() {
     divPlayer2Name.text(myGame.player2Name);
     divPlayer1Score.text(myGame.player1Wins);
     divPlayer2Score.text(myGame.player2Wins);
+    divRound.css("visibility", "visible");
     divRound.text("Round " + myGame.round + " of " + roundLimit + ".");
     divNarrator.css("visibility", "visible")
     divNarrator.text("Please select Rock, Paper or Scissors!");
@@ -229,7 +275,7 @@ connectionsRef.on("value", function(snap) {
    
 });
 
-
+// click event for card selection
 $(".rps-selection").click(function(){
     var mySelection = this.id
     
@@ -251,6 +297,7 @@ $(".rps-selection").click(function(){
     updateMySelection(myKey, mySelection);
 });
 
+// based on myKey determine which selection to update in the database
 function updateMySelection(key, sel) {
     sel = sel.substring(0, sel.indexOf('-'))
     
@@ -267,48 +314,65 @@ function updateMySelection(key, sel) {
     };
 };
 
+// click event to have user enter name and determines if the user is player1 or player2 
+$("#add-user").on("click", function(event) {
+    event.preventDefault();
 
+    myUserName = $("#username-input").val().trim();
+    
+    if (myGame.isOpen && myGame.player1 === "") {
+        divInput.empty();
+        game.update({
+            isOpen: true,
+            player1: myKey,
+            player1CurrentSelection: "",
+            player1Name: myUserName,
+            player1Wins: 0,
+            player2: "",
+            player2CurrentSelection: "",
+            player2Wins: 0,
+            round: 1,
+        });
+        divNarrator.text("Welcome, " + myGame.player1Name + "! Please sit tight. Your opponent hasn't joined yet.");
+        
+    } else if (myGame.isOpen) {
+        game.update({
+            isOpen: false,
+            // player1: myKey,
+            player1CurrentSelection: "",
+            player1Wins: 0,
+            player2: myKey,
+            player2CurrentSelection: "",
+            player2Name: myUserName,
+            player2Wins: 0,
+            round: 1,
+        });
+    }
+    
+});
+
+// click even on the play again button... uses myKey to determine which player is hitting the button
+$("#play-again").on("click", function() {
+    divAgainButton.css("visibility", "hidden");
+    divNarrator.text("Waiting on opponent.")
+
+    
+    if (myKey === myGame.player1) {
+        game.update({
+            player1PlayAgain: "Yes",
+        });
+    } else if (myKey === myGame.player2) {
+        game.update({
+            player2PlayAgain: "Yes",
+        });
+    };
+    
+});
 
 
 $( document ).ready(function() {
     
     divButtons.css("visibility", "hidden");
+    divAgainButton.css("visibility", "hidden");
 
-
-    $("#add-user").on("click", function(event) {
-        event.preventDefault();
-
-        myUserName = $("#username-input").val().trim();
-        
-        if (myGame.isOpen && myGame.player1 === "") {
-            divInput.empty();
-            game.update({
-                isOpen: true,
-                player1: myKey,
-                player1CurrentSelection: "",
-                player1Name: myUserName,
-                player1Wins: 0,
-                player2: "",
-                player2CurrentSelection: "",
-                player2Wins: 0,
-                round: 1,
-            });
-            divNarrator.text("Welcome, " + myGame.player1Name + "! Please sit tight. Your opponent hasn't joined yet.");
-            
-        } else if (myGame.isOpen) {
-            game.update({
-                isOpen: false,
-                // player1: myKey,
-                player1CurrentSelection: "",
-                player1Wins: 0,
-                player2: myKey,
-                player2CurrentSelection: "",
-                player2Name: myUserName,
-                player2Wins: 0,
-                round: 1,
-            });
-        }
-        
-    });
-    
 });

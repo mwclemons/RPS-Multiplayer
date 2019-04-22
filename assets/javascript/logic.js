@@ -35,6 +35,7 @@ var divRound = $("#round")
 var curPlayer1Selection = "";
 var curPlayer2Selection = "";
 var roundLimit = 5;
+var winsLimit  = 3;
 
 
 // updates connections table when there is a new connection and when a connection ends
@@ -170,7 +171,7 @@ game.on("value", function(snap) {
     function nextRound() {
 
         // if game over, display that game is over and ask players if they'd like to play again
-        if (gameRound > roundLimit) {
+        if (gameRound > roundLimit || myGame.player1Wins === winsLimit || myGame.player2Wins === winsLimit) {
             divRound.css("visibility", "hidden");
             divButtons.css("visibility", "hidden");
             divPlayer1Score.text(myGame.player1Wins);
